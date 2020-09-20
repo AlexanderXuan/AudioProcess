@@ -51,8 +51,10 @@ def enframe(x, win, hop_len):
 
 
 # 转换frame到时间
-def frame2time():
-    pass
+def frame2time(n_frame, frame_len, hop_len, fs):
+    frame_time = ((np.arange(1, n_frame + 1) - 1) * hop_len + frame_len / 2) / fs
+    return frame_time
+
 
 if __name__ == '__main__':
     win = hanning(3)
