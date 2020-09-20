@@ -9,3 +9,5 @@ special audio format. In ImplementByHand
 directory, we implement the process code without
 special module, otherwise some module we need 
 not to implement.
+
+In the future, i will implement some audio algorithm such as speech enhancement, aec, etc.
