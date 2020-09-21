@@ -2,6 +2,7 @@ import librosa
 import numpy as np
 import librosa.util as util
 from librosa.filters import get_window
+from scipy import signal
 
 
 # 读取对应路径的音频文件
@@ -54,6 +55,19 @@ def enframe(x, win, hop_len):
 def frame2time(n_frame, frame_len, hop_len, fs):
     frame_time = ((np.arange(1, n_frame + 1) - 1) * hop_len + frame_len / 2) / fs
     return frame_time
+
+
+# fft
+def stftms(x, win, nfft, hop):
+    stft_matrix = librosa.stft(x, n_fft=nfft, hop_length=hop, win_length=win, window='hann', center=False)
+    return stft_matrix.T
+
+
+# short time power spectrum density (PSD)
+def pwelch(x, win_len, hop_len, seg_win, seg_overlap, nfft):
+    x_frame = enframe(x, win_len, hop_len)
+    pxx = signal.welch(x_frame, window=seg_win, noverlap=seg_overlap, nfft=nfft, axis=-1)
+    return pxx
 
 
 if __name__ == '__main__':
