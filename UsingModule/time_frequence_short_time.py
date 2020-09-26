@@ -2,6 +2,7 @@ import librosa
 import numpy as np
 import librosa.util as util
 from librosa.filters import get_window
+import librosa.filters as filters
 from scipy import signal
 
 
@@ -68,6 +69,20 @@ def pwelch(x, win_len, hop_len, seg_win, seg_overlap, nfft):
     x_frame = enframe(x, win_len, hop_len)
     pxx = signal.welch(x_frame, window=seg_win, noverlap=seg_overlap, nfft=nfft, axis=-1)
     return pxx
+
+
+# these two functions change the defalt norm method
+def mel_bankm(fs, nfft, mel_num, fmin=0.0, fmax=None):
+    bank = filters.mel(sr=fs, n_fft=nfft, n_mels=mel_num, fmin=fmin, fmax=fmax, norm=None)
+    return bank
+
+
+def mfcc_m(x, fs, mel_num, win_len, hop_len):
+    mfcc = librosa.feature.mfcc(x, sr=fs, n_mfcc=mel_num, win_length=win_len, hop_length=hop_len, nfft=win_len,
+                                center=False, norm=None)
+    delta_mfcc = librosa.feature.delta(mfcc)
+    mfcc_result = np.concatenate((mfcc, delta_mfcc), axis=-1)
+    return mfcc_result
 
 
 if __name__ == '__main__':
