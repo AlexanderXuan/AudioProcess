@@ -4,11 +4,14 @@ import librosa.util as util
 from librosa.filters import get_window
 import librosa.filters as filters
 from scipy import signal
+from scipy.io import wavfile
+from python_speech_features import mfcc, get_filterbanks
 
 
 # 读取对应路径的音频文件
 def read_audio(audio_path):
-    audio_sample, sample_rate = librosa.load(audio_path)
+    audio_sample, sample_rate = librosa.load(audio_path, sr=None)
+    # audio_sample, sample_rate = wavfile.read(audio_path)
     return audio_sample, sample_rate
 
 
@@ -73,16 +76,24 @@ def pwelch(x, win_len, hop_len, seg_win, seg_overlap, nfft):
 
 # these two functions change the defalt norm method
 def mel_bankm(fs, nfft, mel_num, fmin=0.0, fmax=None):
-    bank = filters.mel(sr=fs, n_fft=nfft, n_mels=mel_num, fmin=fmin, fmax=fmax, norm=None)
+    # bank = filters.mel(sr=fs, n_fft=nfft, n_mels=mel_num, fmin=fmin, fmax=fmax, norm=None)
+    bank = get_filterbanks(nfilt=mel_num, nfft=nfft, samplerate=fs, lowfreq=fmin, highfreq=fmax)
     return bank
 
 
 def mfcc_m(x, fs, mel_num, win_len, hop_len):
-    mfcc = librosa.feature.mfcc(x, sr=fs, n_mfcc=mel_num, win_length=win_len, hop_length=hop_len, nfft=win_len,
-                                center=False, norm=None)
-    delta_mfcc = librosa.feature.delta(mfcc)
-    mfcc_result = np.concatenate((mfcc, delta_mfcc), axis=-1)
+    # mfcc_result = librosa.feature.mfcc(x, sr=fs, n_mfcc=mel_num, win_length=win_len, hop_length=hop_len, n_fft=win_len,
+    #                             center=False, norm=None).T
+    mfcc_result = mfcc(x, samplerate=fs, winlen=win_len / fs, winstep=hop_len / fs, numcep=mel_num)
     return mfcc_result
+
+
+def mel_dist(s1, s2, fs, num, win_len, hop_len):
+    ccc1 = mfcc_m(s1, fs, num, win_len, hop_len)
+    ccc2 = mfcc_m(s2, fs, num, win_len, hop_len)
+
+    dist = np.sqrt(np.sum(np.square(ccc1 - ccc2), axis=-1))
+    return dist, ccc1, ccc2
 
 
 if __name__ == '__main__':
